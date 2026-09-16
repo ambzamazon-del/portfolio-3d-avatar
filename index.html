@@ -1,15 +1,221 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Avatar Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>3D Avatar</title>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #111;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
-<body style="background:#111;color:white;font-family:Arial;text-align:center;padding-top:100px;">
+<body>
 
-<h1>GitHub Pages is working!</h1>
+<div id="status">Loading Three.js...</div>
 
-<p>If you can see this, the website itself is loading correctly.</p>
+<script type="module">
+
+import * as THREE from
+    "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+
+import { GLTFLoader } from
+    "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js"
+
+
+const status = document.getElementById("status")
+
+
+/* SCENE */
+
+const scene = new THREE.Scene()
+
+
+/* CAMERA */
+
+const camera = new THREE.PerspectiveCamera(
+    35,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+)
+
+camera.position.set(0, 1.2, 3)
+
+
+/* RENDERER */
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true
+})
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+)
+
+renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+)
+
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace
+
+document.body.appendChild(
+    renderer.domElement
+)
+
+
+/* LIGHT */
+
+const ambientLight =
+    new THREE.AmbientLight(
+        0xffffff,
+        2
+    )
+
+scene.add(ambientLight)
+
+
+const directionalLight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        2
+    )
+
+directionalLight.position.set(
+    2,
+    4,
+    3
+)
+
+scene.add(directionalLight)
+
+
+/* LOAD AVATAR */
+
+const loader = new GLTFLoader()
+
+status.textContent = "Loading avatar..."
+
+
+loader.load(
+    "./model.glb",
+
+    function (gltf) {
+
+        const avatar = gltf.scene
+
+        avatar.position.set(
+            0,
+            -1.5,
+            0
+        )
+
+        scene.add(avatar)
+
+        status.textContent =
+            "Avatar loaded!"
+
+        console.log(
+            "GLB loaded:",
+            gltf
+        )
+    },
+
+    function (progress) {
+
+        if (progress.total) {
+
+            const percent =
+                Math.round(
+                    (progress.loaded /
+                    progress.total) *
+                    100
+                )
+
+            status.textContent =
+                "Loading avatar " +
+                percent +
+                "%"
+        }
+    },
+
+    function (error) {
+
+        status.textContent =
+            "ERROR loading model"
+
+        console.error(
+            "GLB ERROR:",
+            error
+        )
+    }
+)
+
+
+/* ANIMATION */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    )
+
+    renderer.render(
+        scene,
+        camera
+    )
+}
+
+animate()
+
+
+/* RESIZE */
+
+window.addEventListener(
+    "resize",
+    function () {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight
+
+        camera.updateProjectionMatrix()
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        )
+    }
+)
+
+</script>
 
 </body>
 </html>
